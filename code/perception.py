@@ -122,8 +122,9 @@ def perception_step(Rover):
     # 1) Define source and destination points for perspective transform
     dst_size = 5 
     bottom_offset = 6
-    scale = 10
+    #scale = 10
     source = np.float32([[14, 140], [301 ,140],[200, 96], [118, 96]])
+    
     destination = np.float32([[Rover.img.shape[1]/2 - dst_size, Rover.img.shape[0] - bottom_offset],
                   [Rover.img.shape[1]/2 + dst_size, Rover.img.shape[0] - bottom_offset],
                   [Rover.img.shape[1]/2 + dst_size, Rover.img.shape[0] - 2*dst_size - bottom_offset], 
@@ -133,8 +134,7 @@ def perception_step(Rover):
     warped = perspect_transform(Rover.img, source, destination)
     # 3) Apply color threshold to identify navigable terrain/obstacles/rock samples
     threshed = color_thresh(warped)
-    
-    threshed_obstacle = np.invert(threshed)  #inverse of navigable path are obstables
+    threshed_obstacle = np.invert(threshed)  #inverse of navigable path are obstacles
     
     rgb_thresh = (170,134,0)  #rocks
     object_thresh = (255,170,70)
@@ -146,10 +146,12 @@ def perception_step(Rover):
         #          Rover.vision_image[:,:,1] = rock_sample color-thresholded binary image
         #          Rover.vision_image[:,:,2] = navigable terrain color-thresholded binary image
     
-    Rover.vision_image[:,:,0] = threshed_obstacle
-    Rover.vision_image[:,:,1] = threshed_rock
-    Rover.vision_image[:,:,2] = threshed
-   
+    Rover.vision_image[:,:,0] = threshed_obstacle # *0 or *255 blk bkgd,no multiplier=red#
+    Rover.vision_image[:,:,1] = threshed_rock*255
+    Rover.vision_image[:,:,2] = threshed*255  #*255 = works  *0 =blank??
+                                 
+    
+                                 
     # 5) Convert map image pixel values to rover-centric coords
     # 6) Convert rover-centric pixel values to world coordinates
     navigable_x_world,navigable_y_world = get_world_coordinates(threshed,Rover)
